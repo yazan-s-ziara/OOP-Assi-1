@@ -73,12 +73,12 @@ void applyRotate(Image& img) {
         }
     }
     else {
-        cout << "❌ Invalid angle. Use 90, 180 or 270.\n";
+        cout << " Invalid angle. Use 90, 180 or 270.\n";
         return;
     }
 
     img = rotated;
-    cout << "✅ Rotate " << angle << " degrees applied.\n";
+    cout << " Rotate " << angle << " degrees applied.\n";
 }
 
 // ====== SAVE HANDLER ======
@@ -97,9 +97,9 @@ void saveImageFlow(Image& img, string& filename) {
     try {
         img.saveImage(out);
         filename = out;
-        cout << "✅ Saved: " << out << "\n";
+        cout << " Saved: " << out << "\n";
     } catch (exception& e) {
-        cout << "❌ Error while saving: " << e.what() << "\n";
+        cout << " Error while saving: " << e.what() << "\n";
     }
 }
 
