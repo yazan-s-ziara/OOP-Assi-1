@@ -2,9 +2,7 @@
 #include "Image_Class.h"
 using namespace std;
 
-// ====== FILTERS ======
 
-// 2. Black & White filter
 void applyBlackAndWhite(Image& img) {
     for (int y = 0; y < img.height; y++) {
         for (int x = 0; x < img.width; x++) {
@@ -20,7 +18,7 @@ void applyBlackAndWhite(Image& img) {
     cout << "Black & White filter applied.\n";
 }
 
-// 3. Invert color by subtracting the current pixel value of pixel from 255
+
 void applyInvert(Image& img) {
     for (int y = 0; y < img.height; y++) {
         for (int x = 0; x < img.width; x++) {
@@ -33,7 +31,7 @@ void applyInvert(Image& img) {
     cout << "Invert Colors filter applied.\n";
 }
 
-// Rotate the image depending on the choice
+
 void applyRotate(Image& img) {
     cout << "Rotate by (90 / 180 / 270): ";
     int angle; cin >> angle;
@@ -81,12 +79,12 @@ void applyRotate(Image& img) {
     cout << " Rotate " << angle << " degrees applied.\n";
 }
 
-// ====== SAVE HANDLER ======
+
 void saveImageFlow(Image& img, string& filename) {
     cout << "Save to same file? (y/n): ";
     char c;
     cin >> c;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // clear buffer
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
 
     string out = filename;
     if (c == 'n' || c == 'N') {
@@ -103,12 +101,12 @@ void saveImageFlow(Image& img, string& filename) {
     }
 }
 
-// ====== MAIN ======
+
 int main() {
     Image img;
     string filename;
 
-    // Load initial image
+
     while (true) {
         cout << "Enter image file to load: ";
         getline(cin, filename);
