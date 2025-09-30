@@ -1,102 +1,95 @@
 #include <bits/stdc++.h>
-#include <filesystem>
+#include "Image_Class.h"
 using namespace std;
-namespace fs = std::filesystem;
 
-bool validExtension(const string& filename) {
-    vector<string> exts = {".jpg", ".jpeg", ".bmp", ".png"};
-    string ext = fs::path(filename).extension().string();
-    transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    return find(exts.begin(), exts.end(), ext) != exts.end();
-}
-
-bool fileExists(const string& filename) {
-    return fs::exists(filename);
-}
-
-string loadImage() {
-    string file;
-    while (true) {
-        cout << "Enter image file to load: ";
-        getline(cin, file);
-        if (!fileExists(file)) {
-            cout << "File does not exist.\n";
-            continue;
+void applyBlackAndWhite(Image& img) {
+    for (int y = 0; y < img.height; y++) {
+        for (int x = 0; x < img.width; x++) {
+            unsigned char r = img.getPixel(x, y, 0);
+            unsigned char g = img.getPixel(x, y, 1);
+            unsigned char b = img.getPixel(x, y, 2);
+            unsigned char gray = static_cast<unsigned char>(0.299*r + 0.587*g + 0.114*b);
+            img.setPixel(x, y, 0, gray);
+            img.setPixel(x, y, 1, gray);
+            img.setPixel(x, y, 2, gray);
         }
-        if (!validExtension(file)) {
-            cout << "Invalid file extension.\n";
-            continue;
-        }
-        break;
     }
-    cout << "Image loaded: " << file << "\n";
-    return file;
+    cout << "Black & White filter applied.\n";
 }
 
-void applyFilter(string& currentImage, int filterChoice) {
-    if (filterChoice == 1) {
-        cout << "Applying grayscale filter...\n";
-    } else if (filterChoice == 2) {
-        cout << "Applying framing filter...\n";
-        cout << "Choose type: 1) Simple 2) Fancy: ";
-        int type; cin >> type; cin.ignore();
-        cout << "Enter color: ";
-        string color; getline(cin, color);
-        cout << (type == 1 ? "Simple" : "Fancy") << " frame with color " << color << " applied.\n";
-    } else if (filterChoice == 3) {
-        cout << "Applying rotation filter...\n";
-    } else {
-        cout << "Unknown filter.\n";
-    }
-    currentImage += "_modified";
-}
-
-void saveImage(const string& currentImage) {
-    cout << "Save current image.\n";
+void saveImageFlow(Image& img, string& filename) {
     cout << "Save to same file? (y/n): ";
     char c; cin >> c; cin.ignore();
-    string saveFile = currentImage;
+    string out = filename;
     if (c == 'n' || c == 'N') {
         cout << "Enter new filename: ";
-        getline(cin, saveFile);
-        if (!validExtension(saveFile)) {
-            cout << "Invalid extension. Not saved.\n";
-            return;
-        }
+        getline(cin, out);
     }
-    cout << "Image saved to " << saveFile << "\n";
+    img.saveImage(out);
+    filename = out;
+    cout << "Saved: " << out << "\n";
 }
 
 int main() {
-    string currentImage = loadImage();
+    Image img;
+    string filename;
+    while (true) {
+        cout << "Enter image file to load: ";
+        getline(cin, filename);
+        try {
+            img.loadNewImage(filename);
+            break;
+        } catch (exception& e) {
+            cout << "Error: " << e.what() << "\n";
+        }
+    }
+
     bool running = true;
     while (running) {
         cout << "\n--- MENU ---\n";
-        cout << "1. Load a new image\n";
-        cout << "2. Apply Filter 1 (Grayscale)\n";
-        cout << "3. Apply Filter 2 (Frame)\n";
-        cout << "4. Apply Filter 3 (Rotate)\n";
+        cout << "1. Load new image\n";
+        cout << "2. Apply Black & White filter\n";
+        cout << "3. Apply Frame (simulation)\n";
+        cout << "4. Apply Rotate (simulation)\n";
         cout << "5. Save image\n";
         cout << "6. Exit\n";
         cout << "Choice: ";
-        int choice; cin >> choice; cin.ignore();
-        if (choice == 1) {
-            cout << "Save current before loading new? (y/n): ";
+        int ch; cin >> ch; cin.ignore();
+
+        if (ch == 1) {
+            cout << "Save current before load? (y/n): ";
             char c; cin >> c; cin.ignore();
-            if (c == 'y' || c == 'Y') saveImage(currentImage);
-            currentImage = loadImage();
-        } else if (choice >= 2 && choice <= 4) {
-            applyFilter(currentImage, choice - 1);
-        } else if (choice == 5) {
-            saveImage(currentImage);
-        } else if (choice == 6) {
+            if (c == 'y' || c == 'Y') saveImageFlow(img, filename);
+
+            cout << "Enter image file to load: ";
+            getline(cin, filename);
+            try { img.loadNewImage(filename); }
+            catch (exception& e) { cout << "Error: " << e.what() << "\n"; }
+        }
+        else if (ch == 2) {
+            applyBlackAndWhite(img);
+        }
+        else if (ch == 3) {
+            cout << "Frame filter (simulation only).\n";
+        }
+        else if (ch == 4) {
+            cout << "Rotate filter (simulation only).\n";
+        }
+        else if (ch == 5) {
+            saveImageFlow(img, filename);
+        }
+        else if (ch == 6) {
             cout << "Save before exit? (y/n): ";
             char c; cin >> c; cin.ignore();
-            if (c == 'y' || c == 'Y') saveImage(currentImage);
+            if (c == 'y' || c == 'Y') saveImageFlow(img, filename);
             running = false;
-        } else {
+        }
+        else {
             cout << "Invalid choice.\n";
         }
     }
+
     cout << "Goodbye.\n";
+    return 0;
 }
+
