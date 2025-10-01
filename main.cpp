@@ -1,6 +1,90 @@
+// Names & IDs:
+// 1. Mahmoud Ahmed Mohamed (ID: 20221134) – Grayscale, Merge
+// 2. Ziad Alaa Mokhtar (ID: 20240216) – Invert, Rotate
+// 3. Yazan Samir Mohammed (ID: 20243056) – Flip, Black & White
+// All team members worked on the Menu
+
+
+
 #include <bits/stdc++.h>
 #include "Image_Class.h"
 using namespace std;
+
+Image resizeImage(const Image& img, int newW, int newH) {
+    Image out(newW, newH);
+    out.channels = img.channels;
+    for (int y = 0; y < newH; y++) {
+        for (int x = 0; x < newW; x++) {
+            int srcX = x * img.width / newW;
+            int srcY = y * img.height / newH;
+            for (int c = 0; c < img.channels; c++) {
+                unsigned char val = img.getPixel(srcX, srcY, c);
+                out.setPixel(x, y, c, val);
+            }
+        }
+    }
+    return out;
+}
+
+Image mergeImages(Image& img1, Image& img2, bool resizeOption) {
+    Image result;
+
+    if (resizeOption) {
+        int targetW = std::max(img1.width, img2.width);
+        int targetH = std::max(img1.height, img2.height);
+
+        Image resized1 = resizeImage(img1, targetW, targetH);
+        Image resized2 = resizeImage(img2, targetW, targetH);
+
+        result = Image(targetW, targetH);
+        result.channels = img1.channels;
+
+        for (int y = 0; y < targetH; y++) {
+            for (int x = 0; x < targetW; x++) {
+                for (int c = 0; c < img1.channels; c++) {
+                    unsigned char p1 = resized1.getPixel(x, y, c);
+                    unsigned char p2 = resized2.getPixel(x, y, c);
+                    unsigned char merged = static_cast<unsigned char>((p1 + p2) / 2);
+                    result.setPixel(x, y, c, merged);
+                }
+            }
+        }
+    } else {
+        int targetW = std::min(img1.width, img2.width);
+        int targetH = std::min(img1.height, img2.height);
+
+        result = Image(targetW, targetH);
+        result.channels = img1.channels;
+
+        for (int y = 0; y < targetH; y++) {
+            for (int x = 0; x < targetW; x++) {
+                for (int c = 0; c < img1.channels; c++) {
+                    unsigned char p1 = img1.getPixel(x, y, c);
+                    unsigned char p2 = img2.getPixel(x, y, c);
+                    unsigned char merged = static_cast<unsigned char>((p1 + p2) / 2);
+                    result.setPixel(x, y, c, merged);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+void applyGrayscale(Image& img) {
+    for (int y = 0; y < img.height; y++) {
+        for (int x = 0; x < img.width; x++) {
+            unsigned char r = img.getPixel(x, y, 0);
+            unsigned char g = img.getPixel(x, y, 1);
+            unsigned char b = img.getPixel(x, y, 2);
+            unsigned char gray = static_cast<unsigned char>(0.299 * r + 0.587 * g + 0.114 * b);
+            img.setPixel(x, y, 0, gray);
+            img.setPixel(x, y, 1, gray);
+            img.setPixel(x, y, 2, gray);
+        }
+    }
+    cout << "Grayscale filter applied.\n";
+}
 
 void applyBlackAndWhite(Image& img) {
     for (int y = 0; y < img.height; y++) {
@@ -107,8 +191,10 @@ int main(){
         cout<<"3. Invert colors\n";
         cout<<"4. Rotate\n";
         cout<<"5. Flip\n";
-        cout<<"6. Save\n";
-        cout<<"7. Exit\n";
+        cout<<"6. Grayscale\n";
+        cout<<"7. Merge\n";
+        cout<<"8. Save\n";
+        cout<<"9. Exit\n";
         cout<<"Choice: ";
         string s; getline(cin,s); if(s.empty()) continue;
         int ch=stoi(s);
@@ -130,8 +216,39 @@ int main(){
             else if(!a.empty()&&(a[0]=='v'||a[0]=='V')) flipVertical(img);
             else cout<<"Invalid.\n";
         }
-        else if(ch==6) saveImageFlow(img,filename);
+        else if(ch==6) applyGrayscale(img);
         else if(ch==7){
+            string file2;
+            cout << "Enter second image filename: ";
+            getline(cin, file2);
+            try {
+                Image img2(file2);
+                cout << "Resize to biggest size (1) or merge common area (0)? ";
+                string opt; getline(cin, opt);
+                bool resizeOption = (opt == "1");
+                Image merged = mergeImages(img, img2, resizeOption);
+                cout << "Save merged image to: (1) First image, (2) Second image? ";
+                string choice; getline(cin, choice);
+                if (choice == "1") {
+                    merged.saveImage(filename);
+                    img = merged;
+                    cout << "Merged image saved (overwritten): " << filename << "\n";
+                }
+                else if (choice == "2") {
+                    merged.saveImage(file2);
+                    img = merged;
+                    filename = file2;
+                    cout << "Merged image saved (overwritten): " << file2 << "\n";
+                }
+                else {
+                    cout << "Invalid choice! Nothing saved.\n";
+                }
+            } catch (exception& e) {
+                cout << "Error merging: " << e.what() << "\n";
+            }
+        }
+        else if(ch==8) saveImageFlow(img,filename);
+        else if(ch==9){
             cout<<"Save before exit? (y/n): ";
             string a; getline(cin,a);
             if(!a.empty()&&(a[0]=='y'||a[0]=='Y')) saveImageFlow(img,filename);
@@ -140,4 +257,3 @@ int main(){
         else cout<<"Invalid choice\n";
     }
 }
-            
